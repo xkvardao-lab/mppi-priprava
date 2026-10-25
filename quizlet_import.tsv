@@ -1,0 +1,123 @@
+Koľko a aké zbernice používa von Neumann?	1 adresnú + 1 dátovú, zdieľané v čase (v jednom čase len inštrukcia ALEBO dáta).
+Koľko a aké zbernice používa Harvard a čo je výhoda?	2 adresné + 2 dátové. Inštrukcia aj dáta sa čítajú naraz, rýchlejšie, ale zložitejšie.
+Aká architektúra je jadro MSP430?	von Neumann: jedna 16-bitová MAB (adresy) a jedna MDB (dáta), jeden spoločný pamäťový priestor.
+Čo je MAB a MDB?	Memory Address Bus a Memory Data Bus, obe 16-vodičové.
+Kde je RAM a kde FLASH u G2553?	RAM 0x0200–0x03FF, FLASH 0xC000–0xFFFF (vektory 0xFFC0–0xFFFF).
+Čo znamená, že registre sú pamäťovo mapované?	Majú pevnú adresu v tom istom priestore ako RAM, takže sa čítajú a zapisujú ako pamäť (napr. P1OUT = 0x21).
+FLASH vs. RAM?	FLASH drží obsah aj po vypnutí (program, konštanty), zápis je pomalší. RAM po vypnutí zabudne, je rýchla (dočasné dáta).
+Čo je RISC?	Málo jednoduchých rýchlych inštrukcií, zložité operácie sa skladajú z viacerých. MSP430 má RISC: 27 inštrukcií, 7 adresovacích režimov.
+Čo je CISC?	Zložité inštrukcie, ktoré trvajú dlhšie, aj keď potrebuješ len jednoduchú operáciu.
+Koľko registrov má CPU a ktoré sú špeciálne?	16 × 16 bit. R0 = PC, R1 = SP, R2 = SR, R3 = generátor konštánt, R4–R15 pracovné.
+Čo je PC (R0)?	Adresa ďalšej inštrukcie. Inštrukcie majú 2/4/6 B, preto je adresa párna a bit 0 je vždy 0.
+Čo je SP (R1) a čo sa deje pri uložení do zásobníka?	Ukazuje na vrch zásobníka v RAM (0x400). Zásobník rastie dole, pri uložení SP klesne o 2.
+Na čo CPU používa zásobník samo?	Pri volaní podprogramu a prerušenia ukladá PC (návratová adresa) a SR.
+Čo je v stavovom registri SR?	V N Z C (stav ALU), GIE (povolenie prerušení), CPUOFF, OSCOFF, SCG0, SCG1 (nízkopríkonové režimy).
+Registrový adresovací režim?	Rn: operand je priamo v registri. Krátka a rýchla inštrukcia.
+Nepriamy registrový režim?	@Rn: v registri je adresa operandu (až tam je hodnota). Používa sa na polia.
+Absolútny režim?	&ADDR: adresa operandu je priamo v inštrukcii.
+Čo je opkód?	Časť prvého slova inštrukcie, ktorá určuje druh operácie.
+Základná vs. emulovaná inštrukcia?	Základná má vlastný opkód (27). Emulovaná nie (24), je to pohodlnejší zápis a prekladač ju nahradí základnou.
+Ako dať bit do 1 a do 0 v C?	Do 1: REG |= BIT; Do 0: REG &= ~BIT;
+ABC: bit7→0, bit6→1, bit0→1, bit5→0 (binárne)	ABC |= 0b01000001; a ABC &= 0b01011111;
+Čo robí P1DIR?	Nastavuje smer pinu: 1 = výstup, 0 = vstup. Po resete sú všetky piny vstupy.
+Čo robí P1OUT?	Určuje úroveň na výstupnom pine (1 = H, 0 = L) a pamätá si ju. Pri zapnutom rezistore: 1 = pull-up, 0 = pull-down.
+Čo robí P1IN?	Obsahuje aktuálne logické úrovne na pinoch, len na čítanie.
+Čo robí P1REN?	Zapína vnútorný pull-up/pull-down rezistor (ktorý, určuje bit v P1OUT).
+Prečo pull-up pri tlačidle?	Aby nestlačené tlačidlo nenechalo pin „plávať“. Pull-up dá pokoj = 1, stlačenie = 0.
+Čo je plávajúci vstup?	Vstupný pin, na ktorý nič nie je pripojené. Napätie na ňom kolíše, číta sa náhodne a zbytočne žerie prúd.
+Čo musí platiť pre pin s tlačidlom?	Musí byť nastavený ako vstup (P1DIR bit = 0), inak hrozí zničenie pinu.
+Ako rozsvietim LED na pine?	Pin ako výstup (P1DIR) a do P1OUT zapíšem 1 (LED cez rezistor).
+K čomu sú P1SEL a P1SEL2?	Prepínajú pin z bežného I/O (00) na alternatívnu funkciu (vývod periférie: časovač, A/D, SPI...).
+Čo je pri alternatívnej funkcii pinu neaktívne?	Externé prerušenie daného pinu je zakázané a pin neriadi bežný I/O, preberá ho periféria.
+Čo je externé prerušenie?	Prerušenie vyvolané udalosťou (hranou signálu) na pine mimo čipu, napr. stlačením tlačidla.
+Ktoré piny môžu byť vstupmi externých prerušení?	Piny portov P1 a P2 (P1.0–P1.7, P2.x).
+P1IES?	Výber hrany, ktorá nastaví príznak: 1 = zostupná (1→0), 0 = nábežná (0→1).
+P1IE?	Povolenie prerušenia pre jednotlivé piny (1 = povolené).
+P1IFG?	Príznaky prerušenia pinov. Nastaví sa pri zvolenej hrane, maže sa softvérovo v ISR.
+Ako nastaviť nepoužité piny a prečo?	Ako výstupy, nezapojené (alebo vstup s rezistorom). Aby nevznikol plávajúci vstup, ktorý zbytočne žerie prúd.
+Tri oscilátory G2553?	LFXT1CLK (kryštál 32768 Hz, presný, pomalý štart), DCOCLK (interný 100 kHz–20 MHz, rýchly štart), VLOCLK (interný ~12 kHz, najnižšia spotreba, nepresný).
+Ktoré hodinové signály existujú?	ACLK, MCLK, SMCLK.
+ACLK: zdroj a použitie?	LFXT1 alebo VLO (nie DCO). Delenie 1/2/4/8. Pre periférie.
+MCLK: zdroj a použitie?	LFXT1, VLO alebo DCO. Delenie 1/2/4/8. Používa ho len CPU.
+SMCLK: zdroj a použitie?	LFXT1, VLO alebo DCO. Delenie 1/2/4/8. Pre periférie.
+Stav hodín po PUC resete?	MCLK a SMCLK z DCO ≈ 1 MHz (RSEL = 7, DCO = 3), ACLK z LFXT1.
+Ako kalibrovať DCOCLK?	Skopírovať kalibračné hodnoty z informačnej FLASH (segment A) do BCSCTL1 a DCOCTL: presnosť ≈ 3 %.
+Postup prepnutia MCLK na LFXT1?	Zapnúť LFXT1, zmazať OFIFG, počkať ≥ 50 µs, testovať OFIFG a opakovať kým je 0, potom prepnúť MCLK.
+Dva druhy resetu a základný rozdiel?	POR a PUC. POR vždy vyvolá aj PUC, ale PUC nevyvolá POR.
+Čo vyvolá POR?	Pripojenie napájania (BOR), nízka úroveň na pine !RST/NMI, SVS.
+Čo okrem POR vyvolá PUC?	Pretečenie watchdogu, zlý kľúč watchdogu alebo FLASH, inštrukcia načítaná z adries periférií (0–0x1FF).
+Úloha BOR?	Deteguje nízke napájanie, drží procesor v resete, kým napätie nie je dosť vysoké, a vyvolá POR.
+Stav po systémovom resete?	Piny sú vstupy, registre v predvolenom stave, watchdog beží, PC ← vektor resetu 0xFFFE.
+Čo musí urobiť aplikačný softvér po resete?	Nastaviť SP, watchdog, periférie, porty, vektory prerušení a inicializovať premenné.
+Čo je prerušenie?	Pozastavenie hlavného programu, CPU vykoná ISR a vráti sa späť.
+Čo je príznak prerušenia?	Bit (flag), ktorý sa nastaví na 1 pri hardvérovej udalosti.
+Čo je priorita prerušenia?	Určuje, ktorá ISR sa vykoná prvá, keď čaká viac žiadostí naraz. Je pevne daná.
+Čo je vektor prerušenia?	Pevná adresa vo FLASH (0xFFC0–0xFFFC), kde je uložená adresa prvej inštrukcie ISR.
+Tri typy prerušení?	Systémový reset, nemaskovateľné, maskovateľné.
+Čo musí platiť, aby sa spustila ISR?	Príznak = 1, povolenie IE = 1 a GIE = 1. (NMI nepotrebuje GIE.)
+Akceptácia prerušenia: čo sa uloží do zásobníka?	PC a potom SR. Potom sa SR vynuluje (aj GIE) a do PC sa načíta vektor ISR.
+Prečo sa pri akceptácii nuluje SR?	Skončí nízkopríkonový režim a GIE = 0, takže ďalšie prerušenia sú zakázané.
+Návrat z ISR (RETI)?	Zo zásobníka sa obnoví SR a potom PC, program pokračuje tam, kde bol prerušený.
+Jedno-príznakové vs. viac-príznakové ISR?	Jedno: príznak maže CPU automaticky. Viac: musí ho zmazať ISR softvérovo, aby vedela, ktorý príznak ju spustil.
+Čo sa stane, ak v ISR nezmažeš príznak viac-príznakového prerušenia?	Po RETI sa ISR spustí znova a znova, program sa zacyklí.
+Čo je nízkopríkonový režim?	CPU spí (odpojený MCLK), ale je napájané. Obsah registrov a RAM ostáva. Spotreba výrazne klesá.
+Koľko je nízkopríkonových režimov a čím sa líšia?	5 (LPM0–LPM4). Líšia sa tým, ktoré hodiny a oscilátory ostanú aktívne (LPM0 vypne len CPU a MCLK, LPM4 všetko).
+Ktoré bity v SR volia režim spánku?	CPUOFF, SCG0, SCG1, OSCOFF.
+Ako vojdem do LPM0 v C?	__bis_SR_register(GIE + CPUOFF);
+Ako zostať po ISR hore (nezaspať)?	V ISR: __bic_SR_register_on_exit(CPUOFF); zmení uloženú kópiu SR.
+Základné vlastnosti časovača T_A3?	16-bitový čítač/časovač, 4 režimy, voliteľný zdroj hodín, 3 záchytné/porovnávacie registre, výstupy s PWM, viac prerušení.
+Čo znamená „3“ v T_A3?	Tri záchytné/porovnávacie registre: TACCR0, TACCR1, TACCR2.
+Zdroje hodín pre TAR?	TACLK (externý pin), ACLK, SMCLK, INCLK. Nie MCLK.
+Deliace pomery deličky časovača?	1, 2, 4 alebo 8 (bity ID).
+Štyri režimy počítadla (MC)?	00 stop, 01 Up (0 → TACCR0), 10 Continuous (0 → 0xFFFF), 11 Up/Down (0 → TACCR0 → 0).
+Up mód: kam počíta a koľko hrán v perióde?	Od 0 do TACCR0, potom znova od 0. Hrán v perióde: TACCR0 + 1.
+Up/Down mód: perióda?	2 × TACCR0 (hore do TACCR0 a dole späť k 0).
+Continuous mód: kam počíta a kedy TAIFG?	Od 0 do 0xFFFF. TAIFG sa nastaví pri prechode 0xFFFF → 0.
+Na čo je continuous mód?	Na viac nezávislých časových intervalov: v ISR TACCR0 += delta. Interval = delta / f.
+Režim zachytávania (CAP = 1)?	Pri udalosti na vstupe sa hodnota TAR skopíruje do TACCRx a nastaví sa CCIFG. Na meranie času.
+Režim porovnávania (CAP = 0)?	Keď TAR = TACCRx, nastaví sa EQUx a CCIFG (prípadne zmena výstupu). Na PWM a prerušenia v intervaloch.
+Úloha výstupnej jednotky?	Generuje výstupný signál (napr. PWM) bez účasti CPU podľa EQU0 a EQUx.
+Koľko režimov má výstupná jednotka?	8 (OUTMOD 0–7).
+Ako vyrobiť PWM?	Up mód, TACCR0 = perióda, TACCR1 = šírka, OUTMOD 7 (reset/set). Väčšie TACCR1 = dlhšie svieti.
+Vektory prerušení Timer1_A3?	Dva: 0xFFFA (CCR0) a 0xFFF8 (CCR1, CCR2, TAIFG).
+Čo nastaví príznaky vektora CCR0 a spoločného vektora?	CCR0: zachytenie/zhoda v CCR0. Spoločný: zachytenie/zhoda v CCR1 a CCR2 a pretečenie počítadla (TAIFG).
+Ktorý príznak časovača sa maže automaticky?	TACCR0 CCIFG (jedno-príznakové). TACCR1, TACCR2 a TAIFG maže ISR.
+Ktorý komparátor má vyššiu prioritu?	CCR0 má vyššiu prioritu než CCR1.
+Ako vypnem časovač pre úsporu energie?	Bity MC = 00 (stop).
+Čo je bit COV?	Pretečenie pri zachytení: zachytilo sa nové ešte pred prečítaním predošlého. Maže sa softvérovo.
+Štyri najvýznamnejšie sériové zbernice?	USB, Ethernet, PCIe, SPI (alebo I²C). Ďalej RS-232, RS-485, CAN, LIN, FireWire.
+Všeobecný koncept master/slave?	Master začína komunikáciu a generuje CLK. Slave medzi sebou nekomunikujú. Vysiela vždy len jedno zariadenie.
+Ktoré zbernice majú diferenciálny prenos a výhoda?	RS-485, Ethernet, PCIe, USB. Odolnosť voči rušeniu (rušenie je na oboch vodičoch rovnaké a odčíta sa) a vlastné nerušenie okolia.
+Čo je SPI?	Serial Peripheral Interface: synchrónna, sériová, plne duplexná zbernica master/slave na krátke vzdialenosti.
+Použitie a rýchlosť SPI?	A/D a D/A prevodníky, posuvné registre, displeje. Až niekoľko Mbps (rýchlejšia ako I²C).
+Signály SPI?	MOSI (SIMO), MISO (SOMI), SCLK, /SS.
+MOSI a MISO?	MOSI: Master Out Slave In (dáta z mastera). MISO: Master In Slave Out (dáta zo slave).
+Ako pripojím viac slave k SPI masteru?	MOSI, MISO a SCLK spoločné, každý slave má vlastný /SS od mastera.
+Prečo je SPI plný duplex?	Dva posuvné registre (master a slave) v kruhu: každým taktom sa vymení 1 bit oboma smermi.
+Protokol SPI: kedy sa dáta menia a kedy čítajú?	Master mení bit na MOSI na dobežnej hrane CLK, slave číta na nábežnej hrane.
+Čo je USCI?	Universal Serial Communication Interface: hardver na sériovú komunikáciu (USCI_A: UART, IrDA, LIN, SPI; USCI_B: SPI, I²C).
+Vlastnosti USCI?	3/4-vodičové SPI, I²C, 7/8 bit, MSB/LSB first, polarita a fáza hodín, programovateľný zdroj hodín, prerušenia, slave môže byť v LPM4.
+Čo spustí vysielanie pri SPI masteri?	Zápis dát do UCB0TXBUF: skopírujú sa do posuvného registra a spustia sa hodiny. Súčasne sa prijíma.
+UCB0TXIFG a UCB0RXIFG?	TXIFG: vysielací buffer je voľný. RXIFG: prijatý celý znak, dá sa prečítať z UCB0RXBUF.
+Delička hodín USCI?	UCB0BR0 + 256·UCB0BR1, hodiny z ACLK alebo SMCLK (UCSSEL).
+Postup konfigurácie USCI?	UCSWRST = 1, nastaviť riadiace bity, nastaviť piny na alt. funkciu, UCSWRST = 0, voliteľne povoliť prerušenia.
+Piny USCI_B SPI na G2553?	P1.5 UCB0CLK, P1.6 SOMI, P1.7 SIMO.
+Čo určujú UCCKPL a UCCKPH?	Polaritu (kľudovú úroveň CLK) a fázu (kedy sa dáta menia a čítajú voči hrane CLK).
+Správne CKPL/CKPH pre 74HC595 (číta na nábežnej)?	CKPL = 0 a CKPH = 1, alebo CKPL = 1 a CKPH = 0: dáta sa menia na dobežnej hrane.
+Ako blikač v assembleri funguje?	Nekonečná slučka: prepne LED (XOR P1OUT), odpočíta R15 do 0 ako oneskorenie, jmp Mainloop.
+Ako urobiť, aby LED blikali striedavo?	Jednu na začiatku nastaviť na 1, druhú na 0 a potom prepínať obe naraz (XOR oboch bitov).
+Ako urobiť blikanie 2× rýchlejšie a 2× pomalšie?	Rýchlejšie: polovičná konštanta v R15. Pomalšie: dvojnásobná, ale R15 je 16-bitový (max 65 535), treba vnorenú slučku.
+Na akú adresu odkazuje .text a .reset?	.text (program) na 0xC000 (začiatok FLASH), .reset na 0xFFFE (vektor resetu).
+Čo je na adrese 0xFFFE a ako súvisí s .text?	Adresa prvej inštrukcie programu (0xC000). CPU si ju po resete načíta do PC.
+Čo je vymaskovanie bitu v while (P1IN & BIT3)?	AND s maskou vyberie z P1IN len bit 3. Podmienka platí, kým je tlačidlo nestlačené (pull-up = 1).
+Prečo LED len krátko bliknú po niekoľkých stlačeniach (cv2)?	Optimalizácia prekladača vyhodila/skrátila prázdny oneskorovací cyklus. Oprava: premenná v cykle volatile.
+Čo sa stane pri polovičnej frekvencii MCLK?	CPU je 2× pomalšie, LED blikajú 2× pomalšie. Oprava: polovičné oneskorenie.
+Ako rýchlo blikajú LED pri LFXT1 a VLO oproti DCO 1 MHz?	LFXT1 (32768 Hz) asi 30× pomalšie, VLO (≈12 kHz) asi 80× pomalšie. Oneskorenie treba zmenšiť v rovnakom pomere.
+Prečo treba pri viacnásobnom behu slučky (cv3) ošetriť OFIFG?	Pri prepnutí na VLO sa LFXT1 vypne a OFIFG sa nastaví a sám sa nezmaže. Treba ho znova zmazať a počkať, kým ostane 0.
+Ako urobiť, aby LED zablikali po stlačení S1 vždy 16×? (cv4)	Presunúť mazanie príznaku P1IFG na koniec ISR, aby sa stlačenia počas blikania ignorovali.
+Ako sa zmenila spotreba po LPM4 (cv4)?	V spánku klesla na minimum (rádovo µA a menej). V ISR je odber ako v aktívnom režime.
+Ako zistím, či bolo stlačené zelené alebo červené tlačidlo?	V ISR testujem, ktorý bit v P1IFG je nastavený (P1.1 zelené, P1.2 červené), prepnem príslušnú LED a príznak zmažem.
+Princíp enkodéra?	Dva výstupy A, B posunuté o štvrť periódy. Pri hrane na A sa podľa úrovne B určí smer otáčania.
+Ako vypočítam delta pre časovač (cv5)?	delta = f_časovača × čas. Pri 32768 Hz: 1 s = 32768, 0,5 s = 16384.
+Prečo červená LED v cv5 svieti trvale slabšie?	Nezmazaný príznak CCR1 (viac-príznakové): ISR sa spúšťa stále dokola, LED sa prepína veľmi rýchlo. Treba v ISR príznak zmazať.
+Ktorý komparátor má vyššiu prioritu (cv5)?	CCR0 vyššiu než CCR1, preto zelená LED (CCR0) bliká správne aj pri chybe v ISR CCR1.
